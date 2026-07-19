@@ -1,0 +1,8 @@
+# Auto-downloaded model asset (fetched on first run)
+hand_landmarker.task
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
