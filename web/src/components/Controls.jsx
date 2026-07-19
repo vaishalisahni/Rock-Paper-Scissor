@@ -2,9 +2,12 @@ export default function Controls({
   onPlay,
   onReset,
   onToggleCamera,
+  onToggleSound,
   cameraOn,
+  soundOn,
   disabled,
   playing,
+  matchOver,
 }) {
   return (
     <div className="controls">
@@ -14,7 +17,7 @@ export default function Controls({
         disabled={disabled || playing || !cameraOn}
         title={!cameraOn ? "Turn the camera on to play" : undefined}
       >
-        {playing ? "Playing…" : "▶ Play round"}
+        {playing ? "Playing…" : matchOver ? "🔁 New match" : "▶ Play round"}
       </button>
       <button
         className={`btn ${cameraOn ? "btn--ghost" : "btn--warn"}`}
@@ -22,6 +25,13 @@ export default function Controls({
         disabled={playing}
       >
         {cameraOn ? "📷 Camera off" : "📷 Camera on"}
+      </button>
+      <button
+        className="btn btn--ghost"
+        onClick={onToggleSound}
+        title={soundOn ? "Mute sounds" : "Unmute sounds"}
+      >
+        {soundOn ? "🔊" : "🔇"}
       </button>
       <button className="btn btn--ghost" onClick={onReset} disabled={disabled}>
         ↺ Reset

@@ -9,21 +9,23 @@ import { classifyHand, HAND_CONNECTIONS } from "../lib/gesture.js";
  *   landmarkerRef  - ref holding the MediaPipe HandLandmarker (or null)
  *   active         - whether detection should run
  *   cameraOn       - whether the webcam stream should be running
- *   liveMoveRef    - ref the parent reads at "shoot" time (latest move)
- *   onLiveMove     - throttled callback with the current move (for the label)
+ *   liveMoveRef    - ref the parent reads at "shoot" time (latest game move)
+ *   onDetect       - throttled callback { move, gesture, confidence, fps }
  */
 export default function CameraView({
   landmarkerRef,
   active,
   cameraOn,
   liveMoveRef,
-  onLiveMove,
+  onDetect,
 }) {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const rafRef = useRef(0);
   const lastEmitRef = useRef(0);
   const lastVideoTimeRef = useRef(-1);
+  const fpsRef = useRef(0);
+  const lastFrameTsRef = useRef(0);
   const [camError, setCamError] = useState(null);
 
   // Start/stop the webcam when cameraOn changes.
@@ -119,19 +121,38 @@ export default function CameraView({
         // Only re-run detection when the frame actually advanced.
         if (video.currentTime !== lastVideoTimeRef.current) {
           lastVideoTimeRef.current = video.currentTime;
-          const result = landmarker.detectForVideo(video, performance.now());
+
+          // Smoothed processing FPS.
+          const now = performance.now();
+          if (lastFrameTsRef.current) {
+            const inst = 1000 / (now - lastFrameTsRef.current);
+            fpsRef.current = fpsRef.current
+              ? fpsRef.current * 0.9 + inst * 0.1
+              : inst;
+          }
+          lastFrameTsRef.current = now;
+
+          const result = landmarker.detectForVideo(video, now);
           const landmarks = result.landmarks?.[0] ?? null;
-          const handed = result.handednesses?.[0]?.[0]?.categoryName ?? "Right";
-          const move = landmarks ? classifyHand(landmarks, handed) : null;
+          const handedInfo = result.handednesses?.[0]?.[0];
+          const handed = handedInfo?.categoryName ?? "Right";
+          const confidence = landmarks ? (handedInfo?.score ?? 0) : 0;
+          const { move, gesture } = landmarks
+            ? classifyHand(landmarks, handed)
+            : { move: null, gesture: null };
 
           liveMoveRef.current = move;
           drawOverlay(landmarks);
 
-          // Throttle the label update to ~6/sec to avoid excess re-renders.
-          const now = performance.now();
-          if (now - lastEmitRef.current > 160) {
+          // Throttle updates to ~7/sec to avoid excess re-renders.
+          if (now - lastEmitRef.current > 140) {
             lastEmitRef.current = now;
-            onLiveMove?.(move);
+            onDetect?.({
+              move,
+              gesture,
+              confidence,
+              fps: Math.round(fpsRef.current),
+            });
           }
         }
       }
@@ -142,11 +163,11 @@ export default function CameraView({
       rafRef.current = requestAnimationFrame(tick);
     } else {
       liveMoveRef.current = null;
-      onLiveMove?.(null);
+      onDetect?.({ move: null, gesture: null, confidence: 0, fps: 0 });
       clearOverlay();
     }
     return () => cancelAnimationFrame(rafRef.current);
-  }, [active, cameraOn, landmarkerRef, liveMoveRef, onLiveMove]);
+  }, [active, cameraOn, landmarkerRef, liveMoveRef, onDetect]);
 
   return (
     <div className="camera">
