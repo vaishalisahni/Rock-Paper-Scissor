@@ -117,6 +117,7 @@
 @media (max-width: 760px) {
   .arena {
     grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 
@@ -431,6 +432,7 @@
   border-radius: 12px;
   border: 1px solid transparent;
   cursor: pointer;
+  touch-action: manipulation;
   transition: transform 0.06s ease, filter 0.15s ease, opacity 0.15s ease,
     box-shadow 0.2s ease;
 }
@@ -525,4 +527,132 @@ kbd {
   border-radius: 6px;
   padding: 1px 7px;
   font-size: 0.8rem;
+}
+
+/* Mobile ------------------------------------------------------------------ */
+@media (max-width: 760px) {
+  .app {
+    padding: 14px 10px calc(24px + env(safe-area-inset-bottom));
+    gap: 12px;
+  }
+
+  /* Mode picker: shrink so all four fit on one row. */
+  .modes {
+    max-width: 100%;
+  }
+  .modes__btn {
+    font-size: 0.75rem;
+    padding: 6px 9px;
+  }
+
+  /* Scoreboard: full width, tighter. */
+  .scoreboard {
+    min-width: 0;
+    width: 100%;
+    gap: 14px;
+    padding: 10px 14px;
+  }
+  .scoreboard__score {
+    font-size: 1.6rem;
+  }
+  .scoreboard__side {
+    min-width: 56px;
+  }
+
+  /* CPU panel becomes a compact strip under the camera instead of a
+     second full-height card. */
+  .panel__body--cpu {
+    aspect-ratio: auto;
+    min-height: 130px;
+  }
+  .cpu {
+    flex-direction: row;
+    gap: 16px;
+  }
+  .cpu__hand {
+    font-size: 3.2rem;
+  }
+  @keyframes cpu-shake {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-8deg);
+    }
+    50% {
+      transform: translateY(-10px) rotate(8deg);
+    }
+  }
+  .cpu__caption {
+    font-size: 0.8rem;
+  }
+
+  /* Compact HUD / labels. */
+  .hud {
+    top: 8px;
+    right: 8px;
+    font-size: 0.65rem;
+    padding: 2px 7px;
+  }
+  .detecting {
+    left: 8px;
+    bottom: 8px;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  .hold {
+    bottom: 8px;
+    padding: 5px 10px;
+  }
+  .hold__bar {
+    width: 64px;
+  }
+
+  /* Controls: tighter buttons, still comfortable tap targets. */
+  .controls {
+    gap: 8px;
+    width: 100%;
+  }
+  .btn {
+    padding: 11px 14px;
+    font-size: 0.88rem;
+    border-radius: 10px;
+  }
+
+  .gesture-hints {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 14px;
+    font-size: 0.72rem;
+    padding: 0 4px;
+  }
+
+  .stats {
+    font-size: 0.72rem;
+    gap: 7px;
+    padding: 7px 10px;
+    max-width: 100%;
+  }
+
+  .app__footer {
+    font-size: 0.75rem;
+    padding: 0 8px;
+  }
+
+  .overlay__matchup {
+    font-size: 0.9rem;
+    padding: 0 12px;
+  }
+}
+
+/* Very narrow phones ------------------------------------------------------ */
+@media (max-width: 380px) {
+  .modes__btn {
+    font-size: 0.68rem;
+    padding: 5px 6px;
+  }
+  .scoreboard {
+    gap: 8px;
+  }
+  .stats__sep {
+    display: none;
+  }
 }
